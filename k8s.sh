@@ -1,5 +1,4 @@
-# Installation of kubeadm cluster on Ubuntu 22.04 that I personally use on my ubuntu VPS machines to deploy pods via github actions
-
+# Installation of kubeadm cluster on Ubuntu 22.04 
 # 1. Disable swap:
 sudo swapoff -a
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
