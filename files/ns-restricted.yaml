@@ -3,7 +3,7 @@ kind: Namespace
 metadata:
   name: restricted-ns
   labels:
-    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/enforce: restricted
     #pod-security.kubernetes.io/enforce-version: v1.32
 
     # We are setting these to our _desired_ `enforce` level.
