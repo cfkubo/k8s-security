@@ -36,6 +36,16 @@ sudo apt-get update
 # 5. Install Docker
 sudo apt-get install docker.io -y
 
+cd /etc/docker
+sudo touch daemon.json
+sudo nano daemon.json
+# copy and paste it on daemon.json
+{
+"exec-opts": ["native.cgroupdriver=systemd"]
+}
+
+sudo systemctl restart docker
+
 # 6. Configure Docker to use systemd cgroup driver (recommended for kubeadm)
 sudo systemctl enable docker
 sudo systemctl daemon-reload
