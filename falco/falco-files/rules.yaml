@@ -1,0 +1,14 @@
+#
+
+- rule: read_files_below_dev
+  desc: read any files below /dev other than known programs that manage devices. Some rootkits hide files in /dev.
+  condition: (open_read) and fd.directory = /dev and fd.name != /dev/null
+  output: "Arul /dev/mem - File has been read below /dev by untrusted program (user=%user.name command=%proc.cmdline file=%fd.name)"
+  priority: WARNING
+
+- rule: create_files_below_dev
+  desc: creating any files below /dev other than known programs that manage devices. Some rootkits hide files in /dev.
+  condition: (evt.type = creat or evt.arg.flags contains O_CREAT) and proc.name != blkid and fd.directory = /dev and fd.name != /dev/null
+  output: "Khanna - File created below /dev by untrusted program (user=%user.name command=%proc.cmdline file=%fd.name)"
+  priority: WARNING
+
