@@ -1,14 +1,37 @@
 #
+- macro: container
+  condition: container.id != host
+
+- macro: spawned_process
+  condition: evt.type = execve and evt.dir=<
+
+- rule: run_shell_in_container
+  desc: a shell was spawned by a non-shell program in a container. Container entrypoints are excluded.
+  condition: container and proc.name = bash and spawned_process and proc.pname exists and not proc.pname in (bash, docker)
+  output: "Shell spawned in a container other than entrypoint (user=%user.name container_id=%container.id container_name=%container.name shell=%proc.name parent=%proc.pname cmdline=%proc.cmdline)"
+  priority: WARNING
+
+- macro: outbound
+  condition: syscall.type=connect and evt.dir=< and (fd.typechar=4 or fd.typechar=6)
+
+- macro: elasticsearch_cluster_port
+  condition: fd.sport=9300
+
+- rule: elasticsearch_unexpected_network_outbound
+  desc: outbound network traffic from elasticsearch on a port other than the standard ports
+  condition: user.name = elasticsearch and outbound and not elasticsearch_cluster_port
+  output: "Outbound network traffic from Elasticsearch on unexpected port (connection=%fd.name)"
+  priority: WARNING
+
 
 - rule: read_files_below_dev
   desc: read any files below /dev other than known programs that manage devices. Some rootkits hide files in /dev.
   condition: (open_read) and fd.directory = /dev and fd.name != /dev/null
-  output: "Arul /dev/mem - File has been read below /dev by untrusted program (user=%user.name command=%proc.cmdline file=%fd.name)"
+  output: "File has been read below /dev by untrusted program (user=%user.name command=%proc.cmdline file=%fd.name)"
   priority: WARNING
 
 - rule: create_files_below_dev
   desc: creating any files below /dev other than known programs that manage devices. Some rootkits hide files in /dev.
   condition: (evt.type = creat or evt.arg.flags contains O_CREAT) and proc.name != blkid and fd.directory = /dev and fd.name != /dev/null
-  output: "Khanna - File created below /dev by untrusted program (user=%user.name command=%proc.cmdline file=%fd.name)"
+  output: "File created below /dev by untrusted program (user=%user.name command=%proc.cmdline file=%fd.name)"
   priority: WARNING
-
