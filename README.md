@@ -8,7 +8,6 @@
 
 ## Option 1: Virutal Box
 > https://www.virtualbox.org/wiki/Downloads
-> wget https://download.virtualbox.org/virtualbox/7.1.6/VirtualBox-7.1.6-167084-macOSArm64.dmg
 
 ## Option 2: Download UTM 
 > https://mac.getutm.app/
