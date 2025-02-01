@@ -5,7 +5,7 @@ sudo apt update
 sudo apt upgrade -y
 
 # Install required packages
-sudo apt install -y docker.io containerd.io
+sudo apt install -y docker.io containerd
 
 # Configure containerd
 sudo mkdir -p /etc/containerd
