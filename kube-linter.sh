@@ -1,6 +1,6 @@
 # kube-linter install
 
-git clone git@github.com:stackrox/kube-linter.git
+git clone https://github.com/stackrox/kube-linter
 cd kube-linter
 make build
 .gobin/kube-linter version
