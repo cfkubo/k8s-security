@@ -30,7 +30,7 @@ sudo swapoff -a
 sudo sed -i '/ swap / s/^\\(.*\\)$/#\\1/g' /etc/fstab
 
 # Initialize the master node
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16  #!/bin/bash
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 -v=5 #!/bin/bash
 
 # Update and upgrade system
 sudo apt update
