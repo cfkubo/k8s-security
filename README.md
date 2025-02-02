@@ -16,3 +16,7 @@
 
 ## Download ubuntu image form UTM gallery
 > https://mac.getutm.app/gallery/
+
+
+# setup vms with multipass
+> https://ubuntu.com/server/docs/how-to-create-a-vm-with-multipass
