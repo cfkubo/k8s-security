@@ -5,6 +5,7 @@
 
 ## Download Ubuntu Desktop or server iso
 > https://ubuntu.com/download/desktop
+
 > https://cdimage.ubuntu.com/ubuntu/releases/
 
 ## Option 1: Virutal Box
