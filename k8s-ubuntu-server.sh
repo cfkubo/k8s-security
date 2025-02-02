@@ -76,12 +76,12 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 # kubectl apply -f https://docs.projectcalico.io/v3.27/manifests/tigera-operator.yaml
 
 # Verify cluster status
-kubectl get nodes
+sudo kubectl get nodes
 
 # Configure kubectl for the master node
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
+# sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 # Join worker nodes (execute on worker nodes)
 # sudo kubeadm join <master-ip>:<port> --token <token> --discovery-token-ca-cert-hash <hash> 
@@ -90,4 +90,4 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 # kubectl apply -f https://docs.projectcalico.io/v3.27/manifests/tigera-operator.yaml
 
 # Verify cluster status
-kubectl get nodes
+sudo kubectl get nodes
