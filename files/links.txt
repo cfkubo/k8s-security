@@ -1,0 +1,1 @@
+https://k21academy.com/docker-kubernetes/three-node-kubernetes-cluster/#:~:text=To%20add%20more%20worker%20nodes,they%20will%20join%20the%20cluster.
