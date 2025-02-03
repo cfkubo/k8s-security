@@ -8,15 +8,15 @@
 
 > https://cdimage.ubuntu.com/ubuntu/releases/
 
-## Option 1: Virutal Box
+### Option 1: Virutal Box
 > https://www.virtualbox.org/wiki/Downloads
 
-## Option 2: Download UTM 
+### Option 2: Download UTM
 > https://mac.getutm.app/
 
-## Download ubuntu image form UTM gallery
+#### Download ubuntu image form UTM gallery
 > https://mac.getutm.app/gallery/
 
 
-# setup vms with multipass
+### Option3: setup vms with multipass on mac or ubuntu
 > https://ubuntu.com/server/docs/how-to-create-a-vm-with-multipass
