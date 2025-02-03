@@ -1,3 +1,6 @@
+# Install GO
+sudo snap install go --classic
+
 #Install kube-bench
 
 git clone https://github.com/aquasecurity/kube-bench
