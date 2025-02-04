@@ -36,13 +36,12 @@ sudo apt-get update
 # 5. Install Docker
 sudo apt-get install docker.io -y
 
-cd /etc/docker
-sudo touch daemon.json
-sudo nano daemon.json
-# copy and paste it on daemon.json
+
+sudo tee /etc/docker/daemon.json <<EOF
 {
 "exec-opts": ["native.cgroupdriver=systemd"]
 }
+EOF
 
 sudo systemctl restart docker
 

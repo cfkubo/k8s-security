@@ -6,7 +6,7 @@ metadata:
 provisioner: kubernetes.io/no-provisioner # indicates that this StorageClass does not support automatic provisioning
 volumeBindingMode: WaitForFirstConsumer
 
-
+---
 # pv.yaml
 apiVersion: v1
 kind: PersistentVolume
