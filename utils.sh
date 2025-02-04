@@ -25,3 +25,7 @@ sudo cp kube-linter /usr/loca/bin/
 # kubesec install
 
 go install github.com/controlplaneio/kubesec/v2@latest
+
+# Trivy Installation
+
+sudo curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.18.3
