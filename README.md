@@ -3,6 +3,12 @@
 ## Repo to setup k8s on MAC M1 ARM
 > Collection of scripts and files to setup a kubeadm k8s cluster on Ubuntu
 
+### Option 1: setup vms with multipass on mac or ubuntu
+#### MAC
+> brew install multipass
+#### Ubuntu
+> https://ubuntu.com/server/docs/how-to-create-a-vm-with-multipass
+
 ### Option 1: Virutal Box
 > https://www.virtualbox.org/wiki/Downloads
 
@@ -12,10 +18,38 @@
 #### Download ubuntu image form UTM gallery
 > https://mac.getutm.app/gallery/
 
-### Option 3: setup vms with multipass on mac or ubuntu
-> https://ubuntu.com/server/docs/how-to-create-a-vm-with-multipass
-
 #### Download Ubuntu Desktop or Server iso
 > https://ubuntu.com/download/desktop
 
 > https://cdimage.ubuntu.com/ubuntu/releases/
+
+
+# Install k8s on MAC
+
+#### Step 1: Setup Multipass
+```
+brew install Multipass
+```
+#### Step 2: Setup vms with Multipass
+```
+multipass launch --name control-plane --cpus 2 --memory 2GB --disk 20GB
+multipass launch --name worker01 --cpus 2 --memory 2GB --disk 20GB
+multipass launch --name worker02 --cpus 2  --memory 2GB --disk 20GB
+
+```
+#### Step 3: Setup k8s on multipass vms
+> Exec shell into the vm
+```
+multipass shell control-plane
+```
+> Update apt packages
+```
+sudo apt update
+sudo snap install go --classic
+```
+> Clone the git repo
+```
+git clone https://github.com/cfkubo/k8s-security
+cd k8s-security
+sh k8s.sh
+```
