@@ -28,7 +28,7 @@
 
 #### Step 1: Setup Multipass
 ```
-brew install Multipass
+brew install multipass
 ```
 #### Step 2: Setup vms with Multipass
 ```
