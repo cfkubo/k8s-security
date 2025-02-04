@@ -1,0 +1,37 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: default
+provisioner: kubernetes.io/no-provisioner # indicates that this StorageClass does not support automatic provisioning
+volumeBindingMode: WaitForFirstConsumer
+
+---
+# pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: default
+spec:
+  capacity:
+    storage: 1Gi # 1 Gigabyte of storage
+  accessModes:
+    - ReadWriteOnce # Can be mounted by a single pod in read/write mode
+  persistentVolumeReclaimPolicy: Retain # Keep the data even after the PVC is deleted
+  storageClassName: default # Name for this storage class (you'll use it in the PVC)
+  hostPath:
+    path: /data/my-volume # The directory on the host machine
+    type: DirectoryOrCreate # Create the directory if it doesn't exist
+---
+# pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: default # Must match the PV's storageClassName
