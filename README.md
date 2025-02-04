@@ -9,10 +9,10 @@
 #### Ubuntu
 > https://ubuntu.com/server/docs/how-to-create-a-vm-with-multipass
 
-### Option 1: Virutal Box
+### Option 2: Virutal Box
 > https://www.virtualbox.org/wiki/Downloads
 
-### Option 2: Download UTM
+### Option 3: Download UTM
 > https://mac.getutm.app/
 
 #### Download ubuntu image form UTM gallery
