@@ -35,8 +35,9 @@ brew install multipass
 multipass launch --name control-plane --cpus 2 --memory 2GB --disk 20GB
 ```
 <p align="center">
-<img src="files/multipass-vm.png" width="800" alt="multipass-vm" />
+<img src="files/mulitpass-vm.png" width="800" alt="multipass-vm" />
 </p>
+
 #### Step 3: Setup k8s on multipass vms
 > Exec shell into the vm
 ```
