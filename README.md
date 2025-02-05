@@ -24,7 +24,7 @@
 > https://cdimage.ubuntu.com/ubuntu/releases/
 
 
-# Install k8s on MAC
+# Install singlenode kubeadm k8s on MAC
 
 #### Step 1: Setup Multipass
 ```
@@ -33,9 +33,6 @@ brew install multipass
 #### Step 2: Setup vms with Multipass
 ```
 multipass launch --name control-plane --cpus 2 --memory 2GB --disk 20GB
-multipass launch --name worker01 --cpus 2 --memory 2GB --disk 20GB
-multipass launch --name worker02 --cpus 2  --memory 2GB --disk 20GB
-
 ```
 #### Step 3: Setup k8s on multipass vms
 > Exec shell into the vm
@@ -52,4 +49,50 @@ sudo snap install go --classic
 git clone https://github.com/cfkubo/k8s-security
 cd k8s-security
 sh k8s.sh
+```
+
+
+# Install multinode kubeadm k8s on MAC
+
+#### Step 1: Setup Multipass
+```
+brew install multipass
+```
+#### Step 2: Setup vms with Multipass
+```
+multipass launch --name control-plane --cpus 2 --memory 2GB --disk 20GB
+multipass launch --name worker01 --cpus 2 --memory 2GB --disk 20GB
+multipass launch --name worker02 --cpus 2  --memory 2GB --disk 20GB
+```
+#### Step 3: Setup k8s on multipass vms
+> Exec shell into the vm
+```
+multipass shell control-plane
+```
+> Update apt packages
+```
+sudo apt update
+sudo snap install go --classic
+```
+> Clone the git repo
+```
+git clone https://github.com/cfkubo/k8s-security
+cd k8s-security
+sh k8s.sh
+```
+
+#### Step 4 :Copy the kubeadm join command from kubeadm init
+```
+cat k8s-logs.txt | grep join
+```
+#### Step 5: ssh worker node
+```
+multipass shell worker01
+```
+#### Step 6: setup k8s worker node
+```
+git clone https://github.com/cfkubo/k8s-security
+cd k8s-security
+sh k8s-worker.sh
+kubeam join --token xxx # Run the join cmd you got from master node
 ```
