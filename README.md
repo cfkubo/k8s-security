@@ -83,7 +83,7 @@ sh k8s.sh
 
 #### Step 4 :Copy the kubeadm join command from kubeadm init
 ```
-cat k8s-logs.txt | grep join
+cat k8s-log.txt | grep join
 ```
 #### Step 5: ssh worker node
 ```
