@@ -34,6 +34,9 @@ brew install multipass
 ```
 multipass launch --name control-plane --cpus 2 --memory 2GB --disk 20GB
 ```
+<p align="center">
+<img src="files/multipass-vm.png" width="800" alt="multipass-vm" />
+</p>
 #### Step 3: Setup k8s on multipass vms
 > Exec shell into the vm
 ```
@@ -44,13 +47,19 @@ multipass shell control-plane
 sudo apt update
 sudo snap install go --classic
 ```
+<p align="center">
+<img src="files/apt.png" width="800" alt="apt" />
+</p>
+
 > Clone the git repo
 ```
 git clone https://github.com/cfkubo/k8s-security
 cd k8s-security
 sh k8s.sh
 ```
-
+<p align="center">
+<img src="files/k8.png" width="800" alt="k8" />
+</p>
 
 # Install multinode kubeadm k8s on MAC
 
@@ -83,7 +92,7 @@ sh k8s.sh
 
 #### Step 4 :Copy the kubeadm join command from kubeadm init
 ```
-cat k8s-log.txt | grep join
+cat k8s-log.txt | grep join -A 2
 ```
 #### Step 5: ssh worker node
 ```
