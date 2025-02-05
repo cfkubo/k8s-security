@@ -74,17 +74,23 @@ multipass launch --name control-plane --cpus 2 --memory 2GB --disk 20GB
 multipass launch --name worker01 --cpus 2 --memory 2GB --disk 20GB
 multipass launch --name worker02 --cpus 2  --memory 2GB --disk 20GB
 ```
+
 #### Step 3: Setup k8s on multipass vms
 > Exec shell into the vm
+
 ```
 multipass shell control-plane
 ```
+
 > Update apt packages
+
 ```
 sudo apt update
 sudo snap install go --classic
 ```
+
 > Clone the git repo
+
 ```
 git clone https://github.com/cfkubo/k8s-security
 cd k8s-security
@@ -93,17 +99,22 @@ sh k8s.sh
 <p align="center">
 <img src="files/k8.png" width="800" alt="k8" />
 </p>
+
 #### Step 4 :Copy the kubeadm join command from kubeadm init
+
 ```
 cat k8s-log.txt | grep join -A 2
 ```
+
 <p align="center">
 <img src="files/join.png" width="800" alt="join" />
 </p>
+
 #### Step 5: ssh worker node
 ```
 multipass shell worker01
 ```
+
 #### Step 6: setup k8s worker node
 ```
 git clone https://github.com/cfkubo/k8s-security
@@ -115,7 +126,7 @@ kubeam join --token xxx # Run the join cmd you got from master node from step 4
 <img src="files/worker-join.png" width="800" alt="worker-join" />
 </p>
 
-#### step 7: verify k8s nodes
+#### step 7: Verify k8s nodes
 <p align="center">
 <img src="files/nodes.png" width="800" alt="nodes" />
 </p>
