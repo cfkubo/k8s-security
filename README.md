@@ -90,11 +90,16 @@ git clone https://github.com/cfkubo/k8s-security
 cd k8s-security
 sh k8s.sh
 ```
-
+<p align="center">
+<img src="files/k8.png" width="800" alt="k8" />
+</p>
 #### Step 4 :Copy the kubeadm join command from kubeadm init
 ```
 cat k8s-log.txt | grep join -A 2
 ```
+<p align="center">
+<img src="files/join.png" width="800" alt="join" />
+</p>
 #### Step 5: ssh worker node
 ```
 multipass shell worker01
@@ -104,5 +109,12 @@ multipass shell worker01
 git clone https://github.com/cfkubo/k8s-security
 cd k8s-security
 sh k8s-worker.sh
-kubeam join --token xxx # Run the join cmd you got from master node
+kubeam join --token xxx # Run the join cmd you got from master node from step 4
 ```
+<p align="center">
+<img src="files/worker-join.png" width="800" alt="worker-join" />
+</p>
+#### step 7: verify k8s nodes
+<p align="center">
+<img src="files/nodes.png" width="800" alt="nodes" />
+</p>
