@@ -114,6 +114,7 @@ kubeam join --token xxx # Run the join cmd you got from master node from step 4
 <p align="center">
 <img src="files/worker-join.png" width="800" alt="worker-join" />
 </p>
+
 #### step 7: verify k8s nodes
 <p align="center">
 <img src="files/nodes.png" width="800" alt="nodes" />
