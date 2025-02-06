@@ -1,1 +1,4 @@
 kubeadm token create --print-join-command
+
+#pod id
+kubectl -n app exec app1 -- curl IP_ADDRESS
