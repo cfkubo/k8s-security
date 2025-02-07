@@ -7,3 +7,5 @@ go install golang.stackrox.io/kube-linter/cmd/kube-linter@latest
 # cd kube-linter
 # make build
 # .gobin/kube-linter version
+
+# https://github.com/stackrox/kube-linter/releases
