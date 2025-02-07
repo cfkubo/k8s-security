@@ -130,3 +130,8 @@ kubeam join --token xxx # Run the join cmd you got from master node from step 4
 <p align="center">
 <img src="files/nodes.png" width="800" alt="nodes" />
 </p>
+
+#### step 8: Get kubeconfig to local (optional)
+```
+multipass transfer control-plane:/home/ubuntu/.kube/config
+```
