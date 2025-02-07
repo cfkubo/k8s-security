@@ -83,3 +83,6 @@ kubectl taint nodes --all node-role.kubernetes.io/control-plane-
 
 # 18. Check the nodes
 kubectl get nodes -o wide
+
+# 19 setup runtime-endpoint for crictl to supress warnings (optional)
+sudo crictl config runtime-endpoint unix:///run/containerd/containerd.sock
