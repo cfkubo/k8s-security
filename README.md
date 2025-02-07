@@ -54,6 +54,7 @@ sudo snap install go --classic
 
 > Clone the git repo
 ```
+sudo apt update
 git clone https://github.com/cfkubo/k8s-security
 cd k8s-security
 sh k8s.sh
@@ -92,6 +93,7 @@ sudo snap install go --classic
 > Clone the git repo
 
 ```
+sudo apt update
 git clone https://github.com/cfkubo/k8s-security
 cd k8s-security
 sh k8s.sh
@@ -117,6 +119,7 @@ multipass shell worker01
 
 #### Step 6: setup k8s worker node
 ```
+sudo apt update
 git clone https://github.com/cfkubo/k8s-security
 cd k8s-security
 sh k8s-worker.sh
