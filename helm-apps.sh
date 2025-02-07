@@ -13,3 +13,8 @@ helm install \
   --create-namespace \
   --version v1.17.0 \
   --set crds.enabled=true
+
+# opa/gatekeeper
+helm repo add opa https://open-policy-agent.github.io/gatekeeper/charts
+helm repo update
+helm install opa opa/gatekeeper --namespace gatekeeper-system --create-namespace
