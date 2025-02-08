@@ -19,7 +19,7 @@ helm repo add opa https://open-policy-agent.github.io/gatekeeper/charts
 helm repo update
 helm install opa opa/gatekeeper --namespace gatekeeper-system --create-namespace
 
-##
+## openebs for local storage dynamic provisioning 
 helm repo add openebs https://openebs.github.io/openebs
 helm repo update
 
