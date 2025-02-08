@@ -1,6 +1,6 @@
 # k8s-security
 
-## Repo to setup k8s on MAC M1 ARM
+## Repo to setup kubeadm k8s on MAC M1 ARM
 > Collection of scripts and files to setup a kubeadm k8s cluster on Ubuntu
 
 ### Option 1: setup vms with multipass on mac or ubuntu
