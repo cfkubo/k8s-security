@@ -18,3 +18,12 @@ helm install \
 helm repo add opa https://open-policy-agent.github.io/gatekeeper/charts
 helm repo update
 helm install opa opa/gatekeeper --namespace gatekeeper-system --create-namespace
+
+##
+helm repo add openebs https://openebs.github.io/openebs
+helm repo update
+
+helm install openebs --namespace openebs openebs/openebs --create-namespace
+
+# make hostpath the default sc
+kubectl patch storageclass openebs-hostpath -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
