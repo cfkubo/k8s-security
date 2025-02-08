@@ -136,5 +136,5 @@ kubeam join --token xxx # Run the join cmd you got from master node from step 4
 
 #### step 8: Get kubeconfig to local (optional)
 ```
-multipass transfer control-plane:/home/ubuntu/.kube/config
+multipass transfer control-plane:/home/ubuntu/.kube/config ~/.kube/config
 ```
