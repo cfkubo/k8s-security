@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: po
+  name: po
+spec:
+  runtimeClassName: myclass
+  containers:
+  - args:
+    - runsc-po
+    image: nginx
+    name: po
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
