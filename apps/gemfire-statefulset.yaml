@@ -1,0 +1,171 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gemfire-locator
+spec:
+  serviceName: "gemfire-locator" # Important for headless service discovery
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gemfire-locator
+  template:
+    metadata:
+      labels:
+        app: gemfire-locator
+    spec:
+      containers:
+      - name: gemfire-locator
+        image: gemfire/gemfire-all:10.1-jdk17
+        ports:
+        - containerPort: 10334
+        - containerPort: 7070
+        - containerPort: 1099
+        command:
+        - gfsh
+        - start
+        - locator
+        - --name=locator-0
+        - --hostname-for-clients=$(POD_IP) # Use POD_IP for client access
+        - --J='-Dgemfire.jmx-manager-hostname-for-clients=$(POD_IP)'
+        env:
+        - name: ACCEPT_TERMS
+          value: "y"
+        envFrom: # Optional: If you have a ConfigMap for env vars
+        - configMapRef:
+            name: gemfire-config # Replace with your ConfigMap name
+        readinessProbe: # Kubernetes readiness probe
+          httpGet:
+            path: /management/v1/members/locator-0
+            port: 7070
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          failureThreshold: 5
+        resources: # Add resource requests/limits as needed
+          requests:
+            cpu: 1
+            memory: 2Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+        volumeMounts: # If you need persistence
+        - name: gemfire-data
+          mountPath: /data
+      volumes: # If you need persistence
+      - name: gemfire-data
+        persistentVolumeClaim:
+          claimName: gemfire-pvc # Replace with your PVC name
+---
+apiVersion: v1
+kind: Service # Headless service for locator discovery
+metadata:
+  name: gemfire-locator
+spec:
+  clusterIP: None # Headless service
+  ports:
+  - port: 10334
+    targetPort: 10334
+    name: locator
+  selector:
+    app: gemfire-locator
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gemfire-server
+spec:
+  serviceName: "gemfire-server"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gemfire-server
+  template:
+    metadata:
+      labels:
+        app: gemfire-server
+    spec:
+      containers:
+      - name: gemfire-server
+        image: gemfire/gemfire-all:10.1-jdk17
+        ports:
+        - containerPort: 7070
+        - containerPort: 7071
+        - containerPort: 40405
+        command:
+        - gfsh
+        - start
+        - server
+        - --name=server-0
+        - --locators=gemfire-locator-0.gemfire-locator[10334] # Use headless service name
+        - --start-rest-api
+        - --http-service-port=7070
+        env:
+        - name: ACCEPT_TERMS
+          value: "y"
+        envFrom: # Optional: If you have a ConfigMap for env vars
+        - configMapRef:
+            name: gemfire-config # Replace with your ConfigMap name
+        readinessProbe:
+          httpGet:
+            path: /gemfire-api/v1/ping
+            port: 7070
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 5
+        resources:
+          requests:
+            cpu: 1
+            memory: 2Gi
+          limits:
+            cpu: 2
+            memory: 4Gi
+        volumeMounts: # If you need persistence
+        - name: gemfire-data
+          mountPath: /data
+      volumes: # If you need persistence
+      - name: gemfire-data
+        persistentVolumeClaim:
+          claimName: gemfire-pvc # Replace with your PVC name
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: management-console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: management-console
+  template:
+    metadata:
+      labels:
+        app: management-console
+    spec:
+      containers:
+      - name: management-console
+        image: gemfire/gemfire-management-console:latest
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          failureThreshold: 5
+        resources:
+          requests:
+            cpu: 1
+            memory: 1Gi
+          limits:
+            cpu: 2
+            memory: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim # If you need persistence
+metadata:
+  name: gemfire-pvc
+spec:
+  accessModes: [ "ReadWriteOnce" ] # Or ReadWriteMany if your storage supports it
+  resources:
+    requests:
+      storage: 10Gi # Adjust as needed
