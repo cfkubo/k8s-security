@@ -43,25 +43,24 @@ multipass launch --name control-plane --cpus 2 --memory 2GB --disk 20GB
 ```
 multipass shell control-plane
 ```
-> Update apt packages
-```
+> Update apt packages and Install k8s
+<!-- ```
 sudo apt update
 sudo snap install go --classic
-```
-<p align="center">
+``` -->
+<!-- <p align="center">
 <img src="files/apt.png" width="800" alt="apt" />
-</p>
+</p> -->
 
-> Clone the git repo
 ```
 sudo apt update
 git clone https://github.com/cfkubo/k8s-security
 cd k8s-security
 sh k8s.sh
 ```
-<p align="center">
+<!-- <p align="center">
 <img src="files/k8.png" width="800" alt="k8" />
-</p>
+</p> -->
 
 # Install multinode kubeadm k8s on MAC
 
@@ -98,9 +97,9 @@ git clone https://github.com/cfkubo/k8s-security
 cd k8s-security
 sh k8s.sh
 ```
-<p align="center">
+<!-- <p align="center">
 <img src="files/k8.png" width="800" alt="k8" />
-</p>
+</p> -->
 
 #### Step 4 :Copy the kubeadm join command from kubeadm init
 
