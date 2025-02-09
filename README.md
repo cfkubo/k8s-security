@@ -82,14 +82,14 @@ multipass launch --name worker02 --cpus 2  --memory 2GB --disk 20GB
 multipass shell control-plane
 ```
 
-> Update apt packages
+<!-- > Update apt packages
 
 ```
 sudo apt update
 sudo snap install go --classic
-```
+``` -->
 
-> Clone the git repo
+> Update apt packages and Install k8s on control-plane
 
 ```
 sudo apt update
