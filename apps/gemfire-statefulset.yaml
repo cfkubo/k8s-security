@@ -1,3 +1,15 @@
+# This is a sample StatefulSet configuration for GemFire on Kubernetes - TESTING NEEDED
+# This guide is desgined to be used with the GemFire Docker images available on Docker Hub and only for testing and poc purposes. NOT FOR PRODUCTION USE.
+
+# Create a secret for pulling GemFire images from Docker Hub
+# Replace <your-docker-username>, <your-docker-password>, <your-email> with your Docker Hub credentials
+
+# kubectl create secret docker-registry docker \
+#   --docker-username=<your-docker-username> \
+#   --docker-password=<your-docker-password> \
+#   --docker-email=<your-email>
+
+
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -13,6 +25,8 @@ spec:
       labels:
         app: gemfire-locator
     spec:
+      imagePullSecrets:
+      - name: docker # Updated secret name
       containers:
       - name: gemfire-locator
         image: gemfire/gemfire-all:10.1-jdk17
@@ -30,9 +44,9 @@ spec:
         env:
         - name: ACCEPT_TERMS
           value: "y"
-        envFrom: # Optional: If you have a ConfigMap for env vars
-        - configMapRef:
-            name: gemfire-config # Replace with your ConfigMap name
+        # envFrom: # Optional: If you have a ConfigMap for env vars
+        # - configMapRef:
+        #     name: gemfire-config # Replace with your ConfigMap name
         readinessProbe: # Kubernetes readiness probe
           httpGet:
             path: /management/v1/members/locator-0
@@ -68,6 +82,28 @@ spec:
   selector:
     app: gemfire-locator
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemfire-locator-service
+spec:
+  selector:
+    app: gemfire-locator
+  ports:
+  - protocol: TCP
+    port: 10334
+    targetPort: 10334
+    name: locator
+  - protocol: TCP
+    port: 7070
+    name: tcp
+    targetPort: 7070
+  - protocol: TCP
+    port: 1099
+    targetPort: 1099
+    name: jmx
+  type: ClusterIP # or NodePort, LoadBalancer based on your requirement
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -83,6 +119,8 @@ spec:
       labels:
         app: gemfire-server
     spec:
+      imagePullSecrets:
+      - name: docker # Updated secret name
       containers:
       - name: gemfire-server
         image: gemfire/gemfire-all:10.1-jdk17
@@ -95,15 +133,15 @@ spec:
         - start
         - server
         - --name=server-0
-        - --locators=gemfire-locator-0.gemfire-locator[10334] # Use headless service name
+        - --locators=gemfire-locator-service.default.svc.cluster.local[10334]# Use headless service name
         - --start-rest-api
         - --http-service-port=7070
         env:
         - name: ACCEPT_TERMS
           value: "y"
-        envFrom: # Optional: If you have a ConfigMap for env vars
-        - configMapRef:
-            name: gemfire-config # Replace with your ConfigMap name
+        # envFrom: # Optional: If you have a ConfigMap for env vars
+        # - configMapRef:
+        #     name: gemfire-config # Replace with your ConfigMap name
         readinessProbe:
           httpGet:
             path: /gemfire-api/v1/ping
@@ -125,6 +163,30 @@ spec:
       - name: gemfire-data
         persistentVolumeClaim:
           claimName: gemfire-pvc # Replace with your PVC name
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemfire-server-service
+spec:
+  selector:
+    app: gemfire-server
+  ports:
+  - protocol: TCP
+    port: 7070
+    name: tcp
+    targetPort: 7070
+  - protocol: TCP
+    port: 7071
+    targetPort: 7071
+    name: jmx
+  - protocol: TCP
+    port: 40405
+    targetPort: 40405
+    name: locator
+  type: ClusterIP # or NodePort, LoadBalancer based on your requirement
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -140,6 +202,8 @@ spec:
       labels:
         app: management-console
     spec:
+      imagePullSecrets:
+      - name: docker # Updated secret name
       containers:
       - name: management-console
         image: gemfire/gemfire-management-console:latest
@@ -159,6 +223,21 @@ spec:
           limits:
             cpu: 2
             memory: 2Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: management-console
+spec:
+  selector:
+    app: management-console
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: ClusterIP # or ClusterIP, NodePort based on your requirement
+
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim # If you need persistence
@@ -169,3 +248,26 @@ spec:
   resources:
     requests:
       storage: 10Gi # Adjust as needed
+
+## Optional: ConfigMap for GemFire specific configuration  TESTING NEEDED
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: gemfire-config
+# data:
+#   # GemFire specific configuration
+#   GEMFIRE_CACHE_XML: |
+#     <?xml version="1.0"?>
+#     <cache xmlns="http://geode.apache.org/schema/cache"
+#            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+#            xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+#            version="1.0">
+#       <region name="myRegion">
+#         <region-attributes data-policy="NORMAL"/>
+#       </region>
+#     </cache>
+#   GEMFIRE_LOCATOR_PORT: "10334" # Example port override
+#   JAVA_OPTS: "-Xmx2g -XX:+UseG1GC"  # Example JVM options
+#   # Other environment variables as needed
+#   CLUSTER_NAME: "my-gemfire-cluster"
+#   # ... any other env vars
