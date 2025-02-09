@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-server
+  namespace: kube-system
+  labels:
+    k8s-app: metrics-server
+spec:
+  selector:
+    matchLabels:
+      k8s-app: metrics-server
+  replicas: 1
+  template:
+    metadata:
+      name: metrics-server
+      labels:
+        k8s-app: metrics-server
+    spec:
+      serviceAccountName: metrics-server
+      containers:
+      - name: metrics-server
+        image: k8s.gcr.io/metrics-server/metrics-server:v0.6.3 # Use the latest stable version!
+        imagePullPolicy: IfNotPresent
+        command:
+        - /metrics-server
+        - --kubelet-service=kubelet
+        - --cert-dir=/tmp  # Important: This is for self-signed certs
+        ports:
+        - containerPort: 4443
+          protocol: TCP
+        volumeMounts:
+        - name: tmp-vol
+          mountPath: /tmp
+      volumes:
+      - name: tmp-vol
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-server
+  namespace: kube-system
+  labels:
+    k8s-app: metrics-server
+spec:
+  selector:
+    k8s-app: metrics-server
+  ports:
+  - protocol: TCP
+    port: 4443
+    targetPort: 4443
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:aggregated-metrics-reader
+rules:
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["pods", "nodes"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: metrics-server-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:aggregated-metrics-reader
+subjects:
+- kind: ServiceAccount
+  name: metrics-server
+  namespace: kube-system
