@@ -45,13 +45,18 @@ kubectl create namespace argocd
 helm repo add argo https://argoproj.github.io/argo-helm
 helm install argocd argo/argo-cd --namespace argocd --create-namespace
 
-# Metrics Server
+# Metrics Server  ## --kubelet-insecure-tls  edit metris-server delploy to add `--kubelet-insecure-tls`  this flag if you are using self-signed certs 
 helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
 helm install metrics-server metrics-server/metrics-server --namespace kube-system --create-namespace
+
 
 ## Kubeshark - kube api traffic analyzer/monitoring
 helm repo add kubeshark https://helm.kubeshark.co
 helm install kubeshark kubeshark/kubeshark --namespace kubeshark --create-namespace
+
+## Kubenetes Dashboard
+helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
 
 # ## KubeDB
 # helm repo add appscode https://charts.appscode.com/stable/
