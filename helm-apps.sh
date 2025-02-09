@@ -1,10 +1,3 @@
-# open-webui
-helm repo add open-webui https://helm.openwebui.com/
-helm repo update
-
-kubectl create namespace open-webui
-helm upgrade --install open-webui open-webui/open-webui --namespace open-webui
-
 # Cert-Manager
 helm repo add jetstack https://charts.jetstack.io --force-update
 helm install \
@@ -13,11 +6,6 @@ helm install \
   --create-namespace \
   --version v1.17.0 \
   --set crds.enabled=true
-
-# opa/gatekeeper
-helm repo add opa https://open-policy-agent.github.io/gatekeeper/charts
-helm repo update
-helm install opa opa/gatekeeper --namespace gatekeeper-system --create-namespace
 
 ## openebs for local storage dynamic provisioning 
 helm repo add openebs https://openebs.github.io/openebs
@@ -49,14 +37,25 @@ helm install argocd argo/argo-cd --namespace argocd --create-namespace
 helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
 helm install metrics-server metrics-server/metrics-server --namespace kube-system --create-namespace
 
-
 ## Kubeshark - kube api traffic analyzer/monitoring
 helm repo add kubeshark https://helm.kubeshark.co
 helm install kubeshark kubeshark/kubeshark --namespace kubeshark --create-namespace
 
-## Kubenetes Dashboard
-helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
+# opa/gatekeeper
+helm repo add opa https://open-policy-agent.github.io/gatekeeper/charts
+helm repo update
+helm install opa opa/gatekeeper --namespace gatekeeper-system --create-namespace
+
+# open-webui
+helm repo add open-webui https://helm.openwebui.com/
+helm repo update
+
+kubectl create namespace open-webui
+helm upgrade --install open-webui open-webui/open-webui --namespace open-webui
+
+# ## Kubenetes Dashboard
+# helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+# helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
 
 # ## KubeDB
 # helm repo add appscode https://charts.appscode.com/stable/
