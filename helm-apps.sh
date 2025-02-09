@@ -1,4 +1,4 @@
-# Cert-Manager
+## Cert-Manager
 helm repo add jetstack https://charts.jetstack.io --force-update
 helm install \
   cert-manager jetstack/cert-manager \
@@ -13,7 +13,7 @@ helm repo update
 
 helm install openebs --namespace openebs openebs/openebs --create-namespace
 
-# make hostpath the default sc
+## make hostpath the default storage class
 kubectl patch storageclass openebs-hostpath -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 ##cloudnative-postgres
@@ -56,6 +56,17 @@ helm repo update
 
 kubectl create namespace open-webui
 helm upgrade --install open-webui open-webui/open-webui --namespace open-webui
+
+## RabbitMQ Open Source Operator
+kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
+# namespace/rabbitmq-system created
+# customresourcedefinition.apiextensions.k8s.io/rabbitmqclusters.rabbitmq.com created
+# serviceaccount/rabbitmq-cluster-operator created
+# role.rbac.authorization.k8s.io/rabbitmq-cluster-leader-election-role created
+# clusterrole.rbac.authorization.k8s.io/rabbitmq-cluster-operator-role created
+# rolebinding.rbac.authorization.k8s.io/rabbitmq-cluster-leader-election-rolebinding created
+# clusterrolebinding.rbac.authorization.k8s.io/rabbitmq-cluster-operator-rolebinding created
+# deployment.apps/rabbitmq-cluster-operator created
 
 # ## Kubenetes Dashboard
 # helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
