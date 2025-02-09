@@ -28,7 +28,8 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo update
 helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
 ## add promethus source to grafana : http://prometheus-operated.monitoring.svc.cluster.local:9090
-
+## kubectl get secrets -n monitoring prometheus-grafana -o yaml | grep admin-user | awk '{print $2}' | base64 -d
+## kubectl get secrets -n monitoring prometheus-grafana -o yaml | grep admin-password | awk '{print $2}' | base64 -d
 
 ## ArgoCD
 kubectl create namespace argocd
@@ -42,6 +43,7 @@ helm install metrics-server metrics-server/metrics-server --namespace kube-syste
 ## Kubeshark - kube api traffic analyzer/monitoring
 helm repo add kubeshark https://helm.kubeshark.co
 helm install kubeshark kubeshark/kubeshark --namespace kubeshark --create-namespace
+## kubectl port-forward -n kubeshark service/kubeshark-front 8899:80
 
 # opa/gatekeeper
 helm repo add opa https://open-policy-agent.github.io/gatekeeper/charts
