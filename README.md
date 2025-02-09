@@ -123,6 +123,9 @@ sudo apt update
 git clone https://github.com/cfkubo/k8s-security
 cd k8s-security
 sh k8s-worker.sh
+```
+#### Step 7: Join the worker node to control plane
+```
 kubeam join --token xxx # Run the join cmd you got from master node from step 4
 ```
 <p align="center">
@@ -130,9 +133,20 @@ kubeam join --token xxx # Run the join cmd you got from master node from step 4
 </p>
 
 #### step 7: Verify k8s nodes
-<p align="center">
-<img src="files/nodes.png" width="800" alt="nodes" />
-</p>
+```
+k get nodes
+```
+Output:
+```
+NAME            STATUS   ROLES           AGE   VERSION
+control-plane   Ready    control-plane   83m   v1.30.9
+worker01        Ready    <none>          82m   v1.30.9
+worker02        Ready    <none>          82m   v1.30.9
+worker03        Ready    <none>          81m   v1.30.9
+worker04        Ready    <none>          81m   v1.30.9
+worker05        Ready    <none>          81m   v1.30.9
+worker06        Ready    <none>          81m   v1.30.9
+```
 
 #### step 8: Get kubeconfig to local (optional)
 ```
