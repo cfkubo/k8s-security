@@ -45,3 +45,41 @@ kubectl create namespace argocd
 helm repo add argo https://argoproj.github.io/argo-helm
 helm install argocd argo/argo-cd --namespace argocd --create-namespace
 
+# Metrics Server
+helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
+helm install metrics-server metrics-server/metrics-server --namespace kube-system --create-namespace
+
+## Kubeshark - kube api traffic analyzer/monitoring
+helm repo add kubeshark https://helm.kubeshark.co
+helm install kubeshark kubeshark/kubeshark --namespace kubeshark --create-namespace
+
+# ## KubeDB
+# helm repo add appscode https://charts.appscode.com/stable/
+# helm install kubedb-operator appscode/kubedb --namespace kubedb --create-namespace
+
+# ## KubeDB Postgres
+# helm install postgres kubedb/postgres --namespace kubedb --create-namespace
+
+# ## KubeDB Elasticsearch
+# helm install elasticsearch kubedb/elasticsearch --namespace kubedb --create-namespace
+
+# ## KubeDB Minio
+# helm install minio kubedb/minio --namespace kubedb --create-namespace
+
+# ## KubeDB Redis
+# helm install redis kubedb/redis --namespace kubedb --create-namespace
+
+# ## KubeDB MongoDB
+# helm install mongodb kubedb/mongodb --namespace kubedb --create-namespace
+
+# ## KubeDB MySQL 
+# helm install mysql kubedb/mysql --namespace kubedb --create-namespace
+
+# ## KubeDB MariaDB
+# helm install mariadb kubedb/mariadb --namespace kubedb --create-namespace
+
+# ## KubeDB Memcached
+# helm install memcached kubedb/memcached --namespace kubedb --create-namespace
+
+# ## KubeDB ProxySQL
+# helm install proxysql kubedb/proxysql --namespace kubedb --create-namespace
