@@ -1,24 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
-  labels:
-    app: netshoot
-  name: netshoot
+  name: netshoot-deployment
 spec:
-  replicas: 1
+  replicas: 1 # You can adjust the number of replicas as needed
   selector:
     matchLabels:
       app: netshoot
-  strategy: {}
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: netshoot
     spec:
       containers:
-      - image: nicolaka/netshoot
-        name: netshoot
-        resources: {}
-status: {}
+      - name: netshoot
+        image: nicolaka/netshoot
+        command: ["/bin/sh", "-c", "while true; do sleep 1d; done"] # Sleep for 1 day
+        resources: # Optional: Add resource requests and limits
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        securityContext: # Optional: Add security context if needed
+          privileged: false # or true if you need privileged access for netshoot tools
+      restartPolicy: Always # Restart the pod if the container exits
