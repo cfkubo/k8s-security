@@ -158,7 +158,8 @@ spec:
         - start
         - server
         - --name=server-0
-        - --locators=gemfire-locator-service.default.svc.cluster.local[10334] # Ensure correct service name and namespace
+        - --locators=$GEMFIRE_LOCATOR_SERVICE_PORT_10334_TCP_ADDR[10334]
+        # - --locators=gemfire-locator-service.default.svc.cluster.local[10334] # Ensure correct service name and namespace
         - --start-rest-api
         - --http-service-port=7070
         env:
