@@ -71,19 +71,7 @@ spec:
       - name: gemfire-data
         persistentVolumeClaim:
           claimName: gemfire-pvc # Replace with your PVC name
----
-apiVersion: v1
-kind: Service # Headless service for locator discovery
-metadata:
-  name: gemfire-locator
-spec:
-  clusterIP: None # Headless service
-  ports:
-  - port: 10334
-    targetPort: 10334
-    name: locator
-  selector:
-    app: gemfire-locator
+
 ---
 apiVersion: v1
 kind: Service
@@ -106,6 +94,7 @@ spec:
     targetPort: 1099
     name: jmx
   type: ClusterIP # or NodePort, LoadBalancer based on your requirement
+
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -125,29 +114,44 @@ spec:
       restartPolicy: Always # Ensure the pod is restarted on failures
       imagePullSecrets:
       - name: docker # Add imagePullSecrets
-      initContainers:
-      - name: wait-for-locator
-        image: nicolaka/netshoot:latest
-        env:
-        - name: LOCATOR_POD_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.podIP
+      # initContainers:
+      # - name: wait-for-locator
+      #   image: bitnami/kubectl
+      #   env:
+      #   - name: LOCATOR_POD_IP
+      #     valueFrom:
+      #       fieldRef:
+      #         fieldPath: status.podIP
+      #   command:
+      #   - sh
+      #   - -c
+      #   - |
+      #     count=0
+      #     POD_IPS=$(kubectl get pod gemfire-locator-0 -o jsonpath='{.status.podIP}')
+      #     echo "POD_IPS=$POD_IPS"
+      #     until nc -zv $POD_IPS 10334 || [ $count -eq 5 ]; do
+      #       echo waiting for gemfire-locator-service
+      #       sleep 2
+      #       count=$((count + 1))
+      #     done
+      #     if [ $count -eq 5 ]; then
+      #       echo "Failed to connect to gemfire-locator-service after 5 attempts"
+      #       exit 1
+      #     fi
+      containers:
+      - name: ip-updater # Regular container for updates
+        image: bitnami/kubectl # Or a small image with kubectl and jq
         command:
-        - sh
+        - /bin/sh
         - -c
         - |
-          count=0
-          until nc -zv $GEMFIRE_LOCATOR_SERVICE_PORT_10334_TCP_ADDR 10334 || [ $count -eq 5 ]; do
-            echo waiting for gemfire-locator-service
-            sleep 2
-            count=$((count + 1))
-          done
-          if [ $count -eq 5 ]; then
-            echo "Failed to connect to gemfire-locator-service after 5 attempts"
-            exit 1
-          fi
-      containers:
+          POD_IPS=$(kubectl get pod gemfire-locator-0 -o jsonpath='{.status.podIP}')
+          echo "$POD_IPS" > /tmp/pod_ips.env
+          echo $POD_IPS
+          kubectl create configmap pod-ips-config --from-file=pod_ips=/tmp/pod_ips.env --dry-run=client -o yaml | kubectl apply -f -
+        volumeMounts:
+        - name: config-volume
+          mountPath: /tmp
       - name: gemfire-server
         image: gemfire/gemfire-all:10.1-jdk17
         ports:
@@ -159,11 +163,16 @@ spec:
         - start
         - server
         - --name=server-0
-        - --locators=$GEMFIRE_LOCATOR_SERVICE_PORT_10334_TCP_ADDR[10334]
-        # - --locators=gemfire-locator-service.default.svc.cluster.local[10334] # Ensure correct service name and namespace
+        # - --locators=$GEMFIRE_LOCATOR_SERVICE_PORT_10334_TCP_ADDR[10334]
+        - --locators=192.168.153.89 #gemfire-locator-service.default.svc.cluster.local # Ensure correct service name and namespace
         - --start-rest-api
         - --http-service-port=7070
         env:
+        - name: POD_IPS
+          valueFrom:
+            configMapKeyRef:
+              name: pod-ips-config
+              key: pod_ips
         - name: ACCEPT_TERMS
           value: "y"
         # envFrom: # Optional: If you have a ConfigMap for env vars
@@ -186,10 +195,22 @@ spec:
         volumeMounts: # If you need persistence
         - name: gemfire-data
           mountPath: /data
+        - name: config-volume
+          mountPath: /tmp
       volumes: # If you need persistence
       - name: gemfire-data
         persistentVolumeClaim:
           claimName: gemfire-pvc-server # Replace with your PVC name
+      - name: config-volume
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pod-ips-config
+data: {}
+
 ---
 apiVersion: v1
 kind: Service
@@ -235,6 +256,13 @@ spec:
         ports:
         - containerPort: 8080
         readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          failureThreshold: 5
+        livenessProbe: # Add liveness probe
           httpGet:
             path: /
             port: 8080
