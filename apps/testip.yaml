@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-ips-updated
+spec:
+  containers:
+  - name: ip-updater # Regular container for updates
+    image: bitnami/kubectl # Or a small image with kubectl and jq
+    command:
+    - /bin/sh
+    - -c
+    - |
+      while true; do
+        POD_IPS=$(kubectl get pods -o jsonpath='{.items[*].status.podIP}')
+        echo "POD_IPS=$POD_IPS" > /tmp/pod_ips.env
+        kubectl create configmap pod-ips-config --from-file=pod_ips=/tmp/pod_ips.env --dry-run=client -o yaml | kubectl apply -f -
+        sleep 60 # Update every minute (adjust as needed)
+      done
+    volumeMounts:
+    - name: config-volume
+      mountPath: /tmp
+  - name: main-container
+    image: busybox # Your application image
+    command: ["/bin/sh", "-c", "while true; do sleep 1d; done"]
+    env:
+    - name: POD_IPS
+      valueFrom:
+        configMapKeyRef:
+          name: pod-ips-config
+          key: pod_ips
+    volumeMounts:
+    - name: config-volume
+      mountPath: /tmp
+  volumes:
+  - name: config-volume
+    emptyDir: {}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pod-ips-config
+data: {}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: configmap-reader-writer  # Or a more descriptive name
+rules:
+- apiGroups: [""] # Core API group
+  resources: ["configmaps"]
+  verbs: ["get", "create", "update", "patch"] # Permissions needed
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-write-configmaps-in-default
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: default # Replace with your service account name if different
+roleRef:
+  kind: Role
+  name: configmap-reader-writer # Name of the Role you created
+  apiGroup: rbac.authorization.k8s.io
