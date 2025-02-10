@@ -25,6 +25,7 @@ spec:
       labels:
         app: gemfire-locator
     spec:
+      restartPolicy: Always # Ensure the pod is restarted on failures
       imagePullSecrets:
       - name: docker # Add imagePullSecrets
       containers:
