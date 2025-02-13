@@ -1,0 +1,318 @@
+# This is a sample StatefulSet configuration for GemFire on Kubernetes - TESTING NEEDED
+# This guide is desgined to be used with the GemFire Docker images available on Docker Hub and only for testing and poc purposes. NOT FOR PRODUCTION USE.
+
+# Create a secret for pulling GemFire images from Docker Hub
+# Replace <your-docker-username>, <your-docker-password>, <your-email> with your Docker Hub credentials
+
+# kubectl create secret docker-registry docker \
+#   --docker-username=<your-docker-username> \
+#   --docker-password=<your-docker-password> \
+#   --docker-email=<your-email>
+
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gemfire-locator
+spec:
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: gemfire-locator
+  serviceName: gemfire-locator
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: gemfire-locator
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - |
+          gfsh start locator --name=locator-0 --port=10334 --J='-Dgemfire.jmx-manager-hostname-for-clients=gemfire-locator-0' --dir=/data/$(POD_NAME) & # Start locator in background
+          sleep 5 # Give the locator some time to start
+          gfsh connect --locator=gemfire-locator-0[10334]
+          gfsh status locator
+          tail -f /dev/null # Keep the container running
+        env:
+        - name: ACCEPT_TERMS
+          value: "y"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        image: gemfire/gemfire:10.0.3
+        imagePullPolicy: IfNotPresent
+        name: gemfire-locator
+        ports:
+        - containerPort: 10334
+          protocol: TCP
+        - containerPort: 7070
+          protocol: TCP
+        - containerPort: 1099
+          protocol: TCP
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: "1"
+            memory: 2Gi
+        volumeMounts:
+        - mountPath: /data
+          name: gemfire-data
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: docker
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: gemfire-data
+        persistentVolumeClaim:
+          claimName: gemfire-pvc
+ 
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemfire-locator-service
+spec:
+  selector:
+    app: gemfire-locator
+  ports:
+  - protocol: TCP
+    port: 10334
+    targetPort: 10334
+    name: locator
+  - protocol: TCP
+    port: 7070
+    name: tcp
+    targetPort: 7070
+  - protocol: TCP
+    port: 1099
+    targetPort: 1099
+    name: jmx
+  type: ClusterIP # or NodePort, LoadBalancer based on your requirement
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gemfire-server
+spec:
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: gemfire-server
+  serviceName: gemfire-server
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: gemfire-server
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - |
+          source /tmp/pod_ips.env  # Source the file to set POD_IPS
+          IFS=',' # Set IFS to comma
+          read -r -a LOCATORS <<< "$POD_IPS" # Read the value into an array
+          gfsh start server --name=server-0 --locators="${LOCATORS[@]}" # Pass the array to gfsh
+          tail -f /dev/null
+        env:
+        - name: ACCEPT_TERMS
+          value: "y"
+        image: gemfire/gemfire:10.0.3
+        imagePullPolicy: IfNotPresent
+        name: gemfire-server
+        ports:
+        - containerPort: 7070
+          protocol: TCP
+        - containerPort: 7071
+          protocol: TCP
+        - containerPort: 40405
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /tmp
+          name: config-volume
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: docker
+      initContainers:
+      - command:
+        - /bin/sh
+        - -c
+        - |
+          POD_IPS=$(kubectl get pod gemfire-locator-0 -o jsonpath='{.status.podIP}')
+          echo "$POD_IPS" > /tmp/pod_ips.env
+          kubectl create configmap pod-ips-config --from-file=pod_ips=/tmp/pod_ips.env --dry-run=client -o yaml | kubectl apply -f -
+        image: bitnami/kubectl
+        imagePullPolicy: Always
+        name: ip-updater
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /tmp
+          name: config-volume
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: config-volume
+
+
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pod-ips-config
+data: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemfire-server-service
+spec:
+  selector:
+    app: gemfire-server
+  ports:
+  - protocol: TCP
+    port: 7070
+    name: tcp
+    targetPort: 7070
+  - protocol: TCP
+    port: 7071
+    targetPort: 7071
+    name: jmx
+  - protocol: TCP
+    port: 40405
+    targetPort: 40405
+    name: locator
+  type: ClusterIP # or NodePort, LoadBalancer based on your requirement
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: management-console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: management-console
+  template:
+    metadata:
+      labels:
+        app: management-console
+    spec:
+      imagePullSecrets:
+      - name: docker # Add imagePullSecrets
+      containers:
+      - name: management-console
+        image: gemfire/gemfire-management-console:latest
+        ports:
+        - containerPort: 8080
+        # readinessProbe:
+        #   httpGet:
+        #     path: /
+        #     port: 8080
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 30
+        #   failureThreshold: 5
+        # livenessProbe: # Add liveness probe
+        #   httpGet:
+        #     path: /
+        #     port: 8080
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 30
+        #   failureThreshold: 5
+        resources:
+          requests:
+            cpu: 1
+            memory: 1Gi
+          limits:
+            cpu: 2
+            memory: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: management-console
+spec:
+  selector:
+    app: management-console
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: ClusterIP # or ClusterIP, NodePort based on your requirement
+---
+apiVersion: v1
+kind: PersistentVolumeClaim # If you need persistence
+metadata:
+  name: gemfire-pvc
+spec:
+  accessModes: [ "ReadWriteOnce" ] # Or ReadWriteMany if your storage supports it
+  resources:
+    requests:
+      storage: 10Gi # Adjust as needed
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim # If you need persistence
+metadata:
+  name: gemfire-pvc-server
+spec:
+  accessModes: [ "ReadWriteOnce" ] # Or ReadWriteMany if your storage supports it
+  resources:
+    requests:
+      storage: 10Gi # Adjust as needed
+
+## Optional: ConfigMap for GemFire specific configuration  TESTING NEEDED
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: gemfire-config
+# data:
+#   # GemFire specific configuration
+#   GEMFIRE_CACHE_XML: |
+#     <?xml version="1.0"?>
+#     <cache xmlns="http://geode.apache.org/schema/cache"
+#            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+#            xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+#            version="1.0">
+#       <region name="myRegion">
+#         <region-attributes data-policy="NORMAL"/>
+#       </region>
+#     </cache>
+#   GEMFIRE_LOCATOR_PORT: "10334" # Example port override
+#   JAVA_OPTS: "-Xmx2g -XX:+UseG1GC"  # Example JVM options
+#   # Other environment variables as needed
+#   CLUSTER_NAME: "my-gemfire-cluster"
+#   # ... any other env vars
