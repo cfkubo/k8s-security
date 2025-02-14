@@ -65,6 +65,7 @@ spec:
           sleep 5 # Give the locator some time to start
           gfsh connect --locator=gemfire-locator-0[10334]
           gfsh status locator
+          gfsh create region --name=sales --type=REPLICATE
           tail -f /dev/null # Keep the container running
         env:
         - name: ACCEPT_TERMS
@@ -158,6 +159,23 @@ spec:
         - /bin/sh
         - -c
         - |
+          POD_IPS=$(kubectl get pod gemfire-locator-0 -o jsonpath='{.status.podIP}')
+          echo "$POD_IPS" > /tmp/pod_ips.env
+          kubectl create configmap pod-ips-config --from-file=pod_ips=/tmp/pod_ips.env --dry-run=client -o yaml | kubectl apply -f -
+          tail -f /dev/null
+        image: bitnami/kubectl
+        imagePullPolicy: Always
+        name: ip-updater
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /tmp
+          name: config-volume
+      - command:
+        - /bin/sh
+        - -c
+        - |
           source /tmp/pod_ips.env  # Source the file to set POD_IPS
           IFS=',' # Set IFS to comma
           read -r -a LOCATORS <<< "$POD_IPS" # Read the value into an array
@@ -185,23 +203,23 @@ spec:
       dnsPolicy: ClusterFirst
       imagePullSecrets:
       - name: docker
-      initContainers:
-      - command:
-        - /bin/sh
-        - -c
-        - |
-          POD_IPS=$(kubectl get pod gemfire-locator-0 -o jsonpath='{.status.podIP}')
-          echo "$POD_IPS" > /tmp/pod_ips.env
-          kubectl create configmap pod-ips-config --from-file=pod_ips=/tmp/pod_ips.env --dry-run=client -o yaml | kubectl apply -f -
-        image: bitnami/kubectl
-        imagePullPolicy: Always
-        name: ip-updater
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /tmp
-          name: config-volume
+      # initContainers:
+      # - command:
+      #   - /bin/sh
+      #   - -c
+      #   - |
+      #     POD_IPS=$(kubectl get pod gemfire-locator-0 -o jsonpath='{.status.podIP}')
+      #     echo "$POD_IPS" > /tmp/pod_ips.env
+      #     kubectl create configmap pod-ips-config --from-file=pod_ips=/tmp/pod_ips.env --dry-run=client -o yaml | kubectl apply -f -
+      #   image: bitnami/kubectl
+      #   imagePullPolicy: Always
+      #   name: ip-updater
+      #   resources: {}
+      #   terminationMessagePath: /dev/termination-log
+      #   terminationMessagePolicy: File
+      #   volumeMounts:
+      #   - mountPath: /tmp
+      #     name: config-volume
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
@@ -308,16 +326,16 @@ spec:
     requests:
       storage: 10Gi # Adjust as needed
 
----
-apiVersion: v1
-kind: PersistentVolumeClaim # If you need persistence
-metadata:
-  name: gemfire-pvc-server
-spec:
-  accessModes: [ "ReadWriteOnce" ] # Or ReadWriteMany if your storage supports it
-  resources:
-    requests:
-      storage: 10Gi # Adjust as needed
+# ---  Not needed for server
+# apiVersion: v1
+# kind: PersistentVolumeClaim # If you need persistence
+# metadata:
+#   name: gemfire-pvc-server
+# spec:
+#   accessModes: [ "ReadWriteOnce" ] # Or ReadWriteMany if your storage supports it
+#   resources:
+#     requests:
+#       storage: 10Gi # Adjust as needed
 
 ## Optional: ConfigMap for GemFire specific configuration  TESTING NEEDED
 # apiVersion: v1
