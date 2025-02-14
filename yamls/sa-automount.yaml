@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: my-service-account
+automountServiceAccountToken: false # Important: Disable auto-mounting
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      serviceAccountName: my-service-account # Use the service account
+      containers:
+      - name: my-container
+        image: nginx:latest # Replace with your image
+        volumeMounts:
+        - name: my-secret-volume
+          mountPath: /etc/my-secret # Mount path inside the container
+          readOnly: true # Recommended: Mount as read-only
+      volumes:
+      - name: my-secret-volume
+        hostPath: # Mount a hostPath volume
+          path: /path/to/my/secret # Replace with the actual path on the host
+          type: File # Or Directory if it's a directory
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+type: Opaque # Or other type if needed
+stringData: # Use stringData for easy string input
+  my-secret-data: "This is the secret content" # Your secret data
+# OR if you have a file you want to use as a secret, use data and base64 encode the content
+# data:
+#   my-secret-data: $(cat my-secret-file | base64)
