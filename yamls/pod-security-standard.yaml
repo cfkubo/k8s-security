@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-restricted-deployment
+  namespace: restricted-namespace
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-web-container
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: shared-data
+              mountPath: /var/www/html # Example mount path
+              readOnly: false # Or true, depending on your needs
+        - name: my-worker-container
+          image: busybox:latest # Or your worker image
+          command: ["sh", "-c", "while true; do echo $(date) >> /data/log.txt; sleep 5; done"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: shared-data
+              mountPath: /data
+              readOnly: false
+      securityContext: # Pod-level
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000 # Important for shared volumes
+      volumes:
+        - name: shared-data
+          emptyDir: {}  # Or a PersistentVolumeClaim for persistent storage
