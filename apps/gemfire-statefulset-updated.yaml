@@ -61,7 +61,7 @@ spec:
         - /bin/sh
         - -c
         - |
-          gfsh start locator --name=locator-0 --port=10334 --J='-Dgemfire.jmx-manager-hostname-for-clients=gemfire-locator-0' --dir=/data/$(POD_NAME) & # Start locator in background
+          gfsh start locator --name=locator-0 --port=10334 --J='-Dgemfire.jmx-manager-hostname-for-clients=gemfire-locator-0' --hostname-for-clients=gemfire-locator-service.default.svc.cluster.local  --dir=/data/$(POD_NAME) & # Start locator in background
           sleep 5 # Give the locator some time to start
           gfsh connect --locator=gemfire-locator-0[10334]
           gfsh status locator
@@ -179,7 +179,10 @@ spec:
           source /tmp/pod_ips.env  # Source the file to set POD_IPS
           IFS=',' # Set IFS to comma
           read -r -a LOCATORS <<< "$POD_IPS" # Read the value into an array
-          gfsh start server --name=server-0 --locators="${LOCATORS[@]}" # Pass the array to gfsh
+          #gfsh start server --name=server-0 --locators="${LOCATORS[@]}" # Pass the array to gfsh
+          gfsh start server --name=server-0  --locators=gemfire-locator-service.default.svc.cluster.local[10334] 
+          #- --start-rest-api
+          #- --http-service-port=7070
           tail -f /dev/null
         env:
         - name: ACCEPT_TERMS
