@@ -63,7 +63,7 @@ spec:
         - |
           gfsh start locator --name=locator-0 --port=10334 --J='-Dgemfire.jmx-manager-hostname-for-clients=gemfire-locator-0' --hostname-for-clients=gemfire-locator-service.default.svc.cluster.local  --dir=/data/$(POD_NAME) & # Start locator in background
           sleep 5 # Give the locator some time to start
-          gfsh connect --locator=gemfire-locator-0[10334]
+          gfsh connect --locator=gemfire-locator-service.default.svc.cluster.local[10334] #gemfire-locator-0[10334]
           gfsh status locator
           gfsh create region --name=sales --type=REPLICATE
           tail -f /dev/null # Keep the container running
