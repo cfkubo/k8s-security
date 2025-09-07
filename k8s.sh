@@ -86,3 +86,11 @@ kubectl get nodes -o wide
 
 # 19 setup runtime-endpoint for crictl to supress warnings (optional)
 sudo crictl config runtime-endpoint unix:///run/containerd/containerd.sock
+
+sleep 30
+
+echo "Sleeping for 30 seconds"
+
+kubectl get nodes -o wide
+
+
