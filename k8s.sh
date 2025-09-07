@@ -88,6 +88,8 @@ kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.3
 # kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/custom-resources.yaml
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.3/manifests/custom-resources.yaml
 
+sleep 60
+
 source ../.env
 
 kubectl create secret docker-registry dockerhub-secret --namespace=calico-system --docker-server=https://index.docker.io/v1/ --docker-username=$docker_username --docker-password=$docker_password --docker-email=$docker_email
