@@ -3,6 +3,9 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
+current_time=$(date +"%Y-%m-%d %H:%M:%S")
+echo "Script started at: $current_time"
+
 # Function to check if a Multipass VM is running
 check_vm_state() {
     local vm_name=$1
@@ -46,18 +49,24 @@ echo
 echo "--- Setting up the control-plane VM ---"
 multipass exec control-plane -- sudo bash -c '
   sudo apt update -y
+  sleep 30
   git clone https://github.com/cfkubo/k8s-security.git
   cd k8s-security
   sh k8s.sh
 '
 # --check for kubectl get nodes status for ready state --   
-if multipass exec control-plane -- kubectl get nodes | grep -q 'Ready'; then
-    echo "Control-plane node is in Ready state."
-else
-    echo "Control-plane node is NOT in Ready state. Please check the setup."
-    exit 1
-fi
+echo "Waiting for control-plane node to become Ready..."
 
+while ! multipass exec control-plane -- sudo bash -c "kubectl get nodes | grep -q 'Ready'"; do
+    echo -n "." # Print a dot for each failed check
+    sleep 5      # Wait for 5 seconds before checking again
+done
+
+multipass exec control-plane -- sudo bash -c "kubectl get nodes -o wide"
+
+echo
+
+echo "Control-plane node is in Ready state. HURRAH! HURRAH! HURRAH!"
 
 echo
 
@@ -83,7 +92,7 @@ multipass exec worker01 -- sudo bash -c '
 
 # Run the join command on the worker node
 multipass exec worker01 -- sudo bash -c "sudo $JOIN_COMMAND"
-echo "Worker01 has joined the cluster."
+echo "Worker01 has joined the cluster. HURRAH! HURRAH! HURRAH!"
 echo
 
 # --- 5. Setup worker02 VM and join to the cluster ---
@@ -96,30 +105,41 @@ multipass exec worker02 -- sudo bash -c '
 '
 
 # Run the join command on the worker node
-multipass exec worker01 -- sudo bash -c "sudo $JOIN_COMMAND"
-echo "Worker02 has joined the cluster."
+multipass exec worker02 -- sudo bash -c "sudo $JOIN_COMMAND"
+echo "Worker02 has joined the cluster. HURRAH! HURRAH! HURRAH!"
 echo
 
 # --- 6. Final check ---
 
 
-if multipass exec control-plane -- kubectl get nodes | grep -q 'Ready'; then
-    echo "All nodes are in Ready state."
-else
-    echo "Some nodes are NOT in Ready state. Please check the setup."
-    exit 1
-fi
+while ! multipass exec control-plane -- sudo bash -c "kubectl get nodes | grep -q 'Ready'"; do
+    echo -n "." # Print a dot for each failed check
+    sleep 5      # Wait for 5 seconds before checking again
+done
+
+multipass exec control-plane -- sudo bash -c "kubectl get nodes -o wide"
+echo "All nodes are in Ready state.HURRAH! HURRAH! HURRAH!"
 
 echo "--- All nodes should now be ready! ---"
 echo "To check the cluster status, run the following command:"
-echo "multipass exec control-plane -- kubectl get nodes"
 
-multipass transfer control-plane:/home/ubuntu/.kube/config ~/.kube/config
+multipass exec control-plane -- sudo bash -c "kubectl get nodes -o wide"
+
+# multipass transfer control-plane:/home/ubuntu/.kube/config ~/.kube/config
+
+multipass exec control-plane -- sudo bash -c "cat /etc/kubernetes/admin.conf" > ~/.kube/config
 
 echo "Kubeconfig file has been copied to your local machine at ~/.kube/config"
 echo "You can now use kubectl to interact with your Kubernetes cluster."
 
 echo "Setup complete!"
 
+end_time=$(date +"%Y-%m-%d %H:%M:%S")
+echo "Script ended at: $end_time"
+
+TotalTime=$(( end_timestamp - current_timestamp ))
+echo "Total time taken: $TotalTime seconds"
+
+echo "HURRAH! HURRAH! HURRAH! All done!"
 
 
