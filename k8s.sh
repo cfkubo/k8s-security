@@ -1,5 +1,8 @@
 # Installation of kubeadm cluster on Ubuntu 22.04
 # 1. Disable swap:
+
+source .env
+
 sudo swapoff -a
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
@@ -77,17 +80,24 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 sudo usermod -aG docker $USER
 newgrp docker
 
+
 # # 14. Install the Tigera Calico operator and custom resource definitions
 # kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/tigera-operator.yaml
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.3/manifests/tigera-operator.yaml
+
+# # 15. Install Calico by creating the necessary custom resource. For more information on configuration options available in this manifest
+# kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/custom-resources.yaml
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.3/manifests/custom-resources.yaml
+
+
+kubectl create secret docker-registry dockerhub-secret --namespace=calico-system --docker-server=https://index.docker.io/v1/ --docker-username=$docker_username --docker-password=$docker_password --docker-email=$docker_email
+
+kubectl patch serviceaccount calico-node -n calico-system -p '{"imagePullSecrets":[{"name": "dockerhub-secret"}]}'
 
 # kubectl create namespace tigera-operator
 # helm install calico projectcalico/tigera-operator --version v3.30.3 --namespace tigera-operator
 
 
-# # 15. Install Calico by creating the necessary custom resource. For more information on configuration options available in this manifest
-# kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/custom-resources.yaml
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.3/manifests/custom-resources.yaml
 
 # 16. Check the status of the cluster
 # kubectl get pods -n calico-system
