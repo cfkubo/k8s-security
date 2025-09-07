@@ -61,12 +61,15 @@ done
 multipass list
 echo
 echo "All VMs are now running."
+sleep 30
+multipass list
 echo
 
 # --- 2. Setup control-plane VM ---
 echo "--- Setting up the control-plane VM ---"
 multipass exec control-plane -- sudo bash -c '
   sudo apt update -y
+  sleep 30
   git clone https://github.com/cfkubo/k8s-security.git
   cd k8s-security
   sh k8s.sh
@@ -74,7 +77,7 @@ multipass exec control-plane -- sudo bash -c '
 # --check for kubectl get nodes status for ready state --
 echo "Waiting for control-plane node to become Ready..."
 
-while ! multipass exec control-plane -- sudo bash -c "kubectl wait --for='jsonpath={.status.conditions[?(@.type=="Ready")].status}=True' node/control-plane"; do
+while ! multipass exec control-plane -- sudo kubectl wait --for=condition=Ready node/control-plane --timeout=300s; do
     echo "." # Print a dot for each failed check
     sleep 5      # Wait for 5 seconds before checking again
 done
@@ -118,7 +121,7 @@ done
 # --- 5. Final check ---
 echo "--- Performing final check on all nodes ---"
 # Loop until all nodes are "Ready"
-while ! multipass exec control-plane -- sudo bash -c "kubectl wait --for='jsonpath={.status.conditions[?(@.type=="Ready")].status}=True' nodes"; do
+while !  multipass exec control-plane -- sudo kubectl wait --for=condition=Ready node/control-plane --timeout=300s; do
     echo "." # Print a dot for each failed check
     sleep 5      # Wait for 5 seconds before checking again
 done
