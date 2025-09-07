@@ -63,7 +63,7 @@ sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 
 # 12. Initialize the cluster
-sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --ignore-preflight-errors=all >> k8s-log.txt
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --ignore-preflight-errors=all 
 #--ignore-preflight-errors=all
 
 # 13. Copy the kubeconfig file to the user's home directory and change the ownership
