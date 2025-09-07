@@ -1,7 +1,6 @@
 # Installation of kubeadm cluster on Ubuntu 22.04
 # 1. Disable swap:
 
-source ../.env
 
 sudo swapoff -a
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
@@ -64,7 +63,7 @@ sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 
 # 12. Initialize the cluster
-sudo kubeadm init --pod-network-cidr=192.168.0.0/16 >> k8s-log.txt
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --ignore-preflight-errors=all >> k8s-log.txt
 #--ignore-preflight-errors=all
 
 # 13. Copy the kubeconfig file to the user's home directory and change the ownership
@@ -89,10 +88,21 @@ kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.3
 # kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/custom-resources.yaml
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.3/manifests/custom-resources.yaml
 
+source ../.env
 
 kubectl create secret docker-registry dockerhub-secret --namespace=calico-system --docker-server=https://index.docker.io/v1/ --docker-username=$docker_username --docker-password=$docker_password --docker-email=$docker_email
 
 kubectl patch serviceaccount calico-node -n calico-system -p '{"imagePullSecrets":[{"name": "dockerhub-secret"}]}'
+
+kubectl patch serviceaccount goldmane -n calico-system -p '{"imagePullSecrets":[{"name": "dockerhub-secret"}]}'
+
+kubectl patch serviceaccount whisker -n calico-system -p '{"imagePullSecrets":[{"name": "dockerhub-secret"}]}'
+
+kubectl patch serviceaccount csi-node-driver -n calico-system -p '{"imagePullSecrets":[{"name": "dockerhub-secret"}]}'
+
+kubectl create secret docker-registry dockerhub-secret --namespace=calico-apiserver --docker-server=https://index.docker.io/v1/ --docker-username=$docker_username --docker-password=$docker_password --docker-email=$docker_email
+
+kubectl patch serviceaccount calico-apiserver  -n calico-apiserver -p '{"imagePullSecrets":[{"name": "dockerhub-secret"}]}'
 
 # kubectl create namespace tigera-operator
 # helm install calico projectcalico/tigera-operator --version v3.30.3 --namespace tigera-operator
