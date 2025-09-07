@@ -67,9 +67,9 @@ echo "--- Extracting the kubeadm join command from the control-plane ---"
 multipass transfer control-plane:k8s-security/k8s-log.txt .
 
 # Extract the join command from the log file
-JOIN_COMMAND=$(grep 'kubeadm join' k8s-log.txt -A 1)
+JOIN_COMMAND=$(grep 'kubeadm join' k8s-log.txt -A 1 | sed 's/\\//' | xargs)
 echo "Extracted join command:"
-echo "$JOIN_COMMAND"
+echo "$JOIN_COMMAND" 
 echo
 
 # --- 4. Setup worker01 VM and join to the cluster ---
@@ -82,7 +82,7 @@ multipass exec worker01 -- sudo bash -c '
 '
 
 # Run the join command on the worker node
-multipass exec worker01 -- sudo $JOIN_COMMAND
+multipass exec worker01 -- sudo bash -c "sudo $JOIN_COMMAND"
 echo "Worker01 has joined the cluster."
 echo
 
@@ -96,7 +96,7 @@ multipass exec worker02 -- sudo bash -c '
 '
 
 # Run the join command on the worker node
-multipass exec worker02 -- sudo $JOIN_COMMAND
+multipass exec worker01 -- sudo bash -c "sudo $JOIN_COMMAND"
 echo "Worker02 has joined the cluster."
 echo
 
@@ -115,6 +115,7 @@ echo "To check the cluster status, run the following command:"
 echo "multipass exec control-plane -- kubectl get nodes"
 
 multipass transfer control-plane:/home/ubuntu/.kube/config ~/.kube/config
+
 echo "Kubeconfig file has been copied to your local machine at ~/.kube/config"
 echo "You can now use kubectl to interact with your Kubernetes cluster."
 
