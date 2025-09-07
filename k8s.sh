@@ -50,10 +50,10 @@ sudo systemctl enable containerd
 sudo apt-get install -y apt-transport-https ca-certificates curl gpg
 
 # 9. Download the public signing key for the Kubernetes package repositories
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg --yes
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg --yes
 
 # 10. Add the Kubernetes apt repository for v1.30
-echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
 # 11. Update apt source list, install kubelet, kubeadm and kubectl and hold them at the current version
 sudo apt-get update
@@ -72,14 +72,19 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 # 14. Install a pod network add-on (Flannel)
 # kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 
+sudo snap install helm --classic
 
 # # 14. Install the Tigera Calico operator and custom resource definitions
 # kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/tigera-operator.yaml
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.3/manifests/tigera-operator.yaml
+# kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.3/manifests/tigera-operator.yaml
+
+kubectl create namespace tigera-operator
+helm install calico projectcalico/tigera-operator --version v3.30.3 --namespace tigera-operator
+
 
 # # 15. Install Calico by creating the necessary custom resource. For more information on configuration options available in this manifest
 # kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/custom-resources.yaml
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.3/manifests/custom-resources.yaml
+# kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.3/manifests/custom-resources.yaml
 
 # 16. Check the status of the cluster
 # kubectl get pods -n calico-system
@@ -98,5 +103,3 @@ sleep 30
 echo "Sleeping for 30 seconds"
 
 kubectl get nodes -o wide
-
-
