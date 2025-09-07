@@ -1,7 +1,7 @@
 # Installation of kubeadm cluster on Ubuntu 22.04
 # 1. Disable swap:
 
-source .env
+source ../.env
 
 sudo swapoff -a
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
