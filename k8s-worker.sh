@@ -29,7 +29,7 @@ EOF
 sudo sysctl --system
 
 # 4. Update apt source list
-sudo apt-get update
+sudo apt-get update -y
 # sudo apt-get upgrade -y
 
 # 5. Install containerd
@@ -50,7 +50,7 @@ sudo systemctl enable containerd
 sudo apt-get install -y apt-transport-https ca-certificates curl gpg
 
 # 9. Download the public signing key for the Kubernetes package repositories
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg --yes
 
 # 10. Add the Kubernetes apt repository for v1.29
 echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
